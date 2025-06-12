@@ -24,6 +24,7 @@ export default function VideoUploadForm() {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<VideoFormData>({
     defaultValues: {
@@ -34,10 +35,13 @@ export default function VideoUploadForm() {
     },
   });
 
+  const currentVideoUrl = watch("videoUrl");
+
   const handleUploadSuccess = (response: IKUploadResponse) => {
     setValue("videoUrl", response.filePath);
     setValue("thumbnailUrl", response.thumbnailUrl || response.filePath);
     showNotification("Video uploaded successfully!", "success");
+    setUploadProgress(100); // Indicate completion, progress bar will hide based on condition below
   };
 
   const handleUploadProgress = (progress: number) => {
@@ -72,8 +76,8 @@ export default function VideoUploadForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="form-control">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mx-auto">
+      <div className="form-control space-x-2">
         <label className="label">Title</label>
         <input
           type="text"
@@ -89,7 +93,7 @@ export default function VideoUploadForm() {
         )}
       </div>
 
-      <div className="form-control">
+      <div className="form-control space-x-2">
         <label className="label">Description</label>
         <textarea
           className={`textarea textarea-bordered h-24 ${
@@ -105,13 +109,13 @@ export default function VideoUploadForm() {
       </div>
 
       <div className="form-control">
-        <label className="label">Upload Video</label>
+        <label className="label space-x-2">Upload Video</label>
         <FileUpload
           fileType="video"
           onSuccess={handleUploadSuccess}
           onProgress={handleUploadProgress}
         />
-        {uploadProgress > 0 && (
+        {uploadProgress > 0 && uploadProgress < 100 && (
           <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
             <div
               className="bg-primary h-2.5 rounded-full transition-all duration-300"
@@ -123,8 +127,8 @@ export default function VideoUploadForm() {
 
       <button
         type="submit"
-        className="btn btn-primary btn-block"
-        disabled={loading || !uploadProgress}
+        className="btn btn-primary btn-block space-x-2"
+        disabled={loading || !currentVideoUrl}
       >
         {loading ? (
           <>
